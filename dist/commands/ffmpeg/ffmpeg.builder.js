@@ -28,7 +28,7 @@ class FFmpegBuilder {
             resultOptions.push(value);
         });
         resultOptions.push(this.outputPath);
-        return { command: "ffmpeg", args: resultOptions };
+        return resultOptions;
     }
 }
 exports.FFmpegBuilder = FFmpegBuilder;

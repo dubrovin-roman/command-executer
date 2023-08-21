@@ -24,7 +24,7 @@ export class FFmpegBuilder {
     return this;
   }
 
-  public build(): ICommand {
+  public build(): string[] {
     if (!this.inputPath) throw new Error("Вы не указали путь к файлу.");
     const resultOptions: string[] = ["-i", this.inputPath];
     this.options.forEach((value, key) => {
@@ -32,6 +32,6 @@ export class FFmpegBuilder {
       resultOptions.push(value);
     });
     resultOptions.push(this.outputPath);
-    return { command: "ffmpeg", args: resultOptions };
+    return resultOptions;
   }
 }
