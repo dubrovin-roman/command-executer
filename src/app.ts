@@ -1,9 +1,10 @@
-import { PromptService } from "./core/prompt/prompt.service";
+import { FFmpegExecutor } from "./commands/ffmpeg/ffmpeg.executor";
+import { ConsoleLogger } from "./out/console-logger/console-logger";
 
 export class App {
   async run() {
-    const res = await (new PromptService()).input<number>("Введите пароль", "number");
-    console.log(res);
+    const ffmpegExecuter = new FFmpegExecutor(ConsoleLogger.getInstance());
+    ffmpegExecuter.execute();
   }
 }
 
