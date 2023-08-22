@@ -6,8 +6,9 @@ import { PromptService } from "../../core/prompt/prompt.service";
 import { FFmpegBuilder } from "./ffmpeg.builder";
 import { FileService } from "../../core/files/file.service";
 import { StreamHandler } from "../../core/handlers/stream.handler";
+import { ICommandWithOutputPath, IFFmpegInput } from "./ffmpeg.types";
 
-export class FFmpegExecutor extends CommandExecutor<string[]> {
+export class FFmpegExecutor extends CommandExecutor<IFFmpegInput> {
   private promptService: PromptService = new PromptService();
   private fileService: FileService = new FileService();
 
@@ -15,8 +16,8 @@ export class FFmpegExecutor extends CommandExecutor<string[]> {
     super(logger);
   }
 
-  protected async prompt(): Promise<string[]> {
-    const inputFile = await this.promptService.input<string>(
+  protected async prompt(): Promise<IFFmpegInput> {
+    const inputPath = await this.promptService.input<string>(
       "Введите путь до файла",
       "input"
     );
@@ -28,36 +29,32 @@ export class FFmpegExecutor extends CommandExecutor<string[]> {
       "Введите высоту картинки",
       "number"
     );
-    const outputPath = await this.promptService.input<string>(
-      "Введите путь до дериктории куда будет положен результат конвертации",
-      "input"
-    );
     const nameFile = await this.promptService.input<string>(
       "Введите имя файла",
       "input"
     );
-    const ext = await this.promptService.input<string>(
-      "Введите расширение файла",
-      "input"
-    );
-    const outputPathWithName = this.fileService.getFilePath(
-      outputPath,
-      nameFile,
-      ext
-    );
-    const inputData = new FFmpegBuilder()
-      .addInputPath(inputFile)
+    return { inputPath, widthResolution, heightResolution, nameFile };
+  }
+  protected bildCommand({
+    inputPath,
+    widthResolution,
+    heightResolution,
+    nameFile,
+  }: IFFmpegInput): ICommandWithOutputPath {
+    const outputPath = this.fileService.getFilePath(inputPath, nameFile, "mp4");
+    const args = new FFmpegBuilder()
+      .addInputPath(inputPath)
       .addResolution(widthResolution, heightResolution)
-      .addOutputPathWithNameFile(outputPathWithName)
+      .addOutputPathWithNameFile(outputPath)
       .build();
-    return inputData;
+
+    return { command: "ffmpeg", args, outputPath };
   }
-  protected bildCommand(input: string[]): ICommand {
-    return { command: "ffmpeg", args: input };
-  }
-  protected spawn(command: ICommand): ChildProcessWithoutNullStreams {
-    this.fileService.deleteFileIfExist(command.args[command.args.length - 1]);
-    return spawn(command.command, command.args);
+  protected spawn(
+    {command, args, outputPath}: ICommandWithOutputPath
+  ): ChildProcessWithoutNullStreams {
+    this.fileService.deleteFileIfExist(outputPath);
+    return spawn(command, args);
   }
   protected processStream(
     stream: ChildProcessWithoutNullStreams,

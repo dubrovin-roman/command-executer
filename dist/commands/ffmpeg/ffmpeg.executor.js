@@ -24,27 +24,25 @@ class FFmpegExecutor extends command_executor_1.CommandExecutor {
     }
     prompt() {
         return __awaiter(this, void 0, void 0, function* () {
-            const inputFile = yield this.promptService.input("Введите путь до файла", "input");
+            const inputPath = yield this.promptService.input("Введите путь до файла", "input");
             const widthResolution = yield this.promptService.input("Введите ширину картинки", "number");
             const heightResolution = yield this.promptService.input("Введите высоту картинки", "number");
-            const outputPath = yield this.promptService.input("Введите путь до дериктории куда будет положен результат конвертации", "input");
             const nameFile = yield this.promptService.input("Введите имя файла", "input");
-            const ext = yield this.promptService.input("Введите расширение файла", "input");
-            const outputPathWithName = this.fileService.getFilePath(outputPath, nameFile, ext);
-            const inputData = new ffmpeg_builder_1.FFmpegBuilder()
-                .addInputPath(inputFile)
-                .addResolution(widthResolution, heightResolution)
-                .addOutputPathWithNameFile(outputPathWithName)
-                .build();
-            return inputData;
+            return { inputPath, widthResolution, heightResolution, nameFile };
         });
     }
-    bildCommand(input) {
-        return { command: "ffmpeg", args: input };
+    bildCommand({ inputPath, widthResolution, heightResolution, nameFile, }) {
+        const outputPath = this.fileService.getFilePath(inputPath, nameFile, "mp4");
+        const args = new ffmpeg_builder_1.FFmpegBuilder()
+            .addInputPath(inputPath)
+            .addResolution(widthResolution, heightResolution)
+            .addOutputPathWithNameFile(outputPath)
+            .build();
+        return { command: "ffmpeg", args, outputPath };
     }
-    spawn(command) {
-        this.fileService.deleteFileIfExist(command.args[command.args.length - 1]);
-        return (0, child_process_1.spawn)(command.command, command.args);
+    spawn({ command, args, outputPath }) {
+        this.fileService.deleteFileIfExist(outputPath);
+        return (0, child_process_1.spawn)(command, args);
     }
     processStream(stream, logger) {
         const streamHandler = new stream_handler_1.StreamHandler(logger);
