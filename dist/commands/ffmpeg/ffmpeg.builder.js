@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FFmpegBuilder = void 0;
 class FFmpegBuilder {
     constructor() {
-        this.outputPath = "c:\\defoltName.mp4";
         this.options = new Map();
         this.options.set("-c:v", "libx264");
     }

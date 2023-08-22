@@ -2,7 +2,7 @@ import { ICommand } from "../../core/executor/command.types";
 
 export class FFmpegBuilder {
   private inputPath: string;
-  private outputPath: string = "c:\\defoltName.mp4";
+  private outputPath: string;
   private options: Map<string, string> = new Map();
 
   constructor() {
